@@ -78,10 +78,16 @@ class ApiClient:
             
             # Process response
             if response.status_code >= 200 and response.status_code < 300:
-                return response.json(), None
+                try:
+                    return response.json(), None
+                except ValueError:
+                    return {'status': 'success'}, None
             else:
-                error_data = response.json()
-                error_msg = error_data.get('error', 'Erro desconhecido')
+                try:
+                    error_data = response.json()
+                    error_msg = error_data.get('error', 'Erro desconhecido')
+                except ValueError:
+                    error_msg = f'Erro HTTP {response.status_code}'
                 return None, error_msg
                 
         except requests.ConnectionError:

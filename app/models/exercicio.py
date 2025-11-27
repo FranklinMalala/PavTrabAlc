@@ -103,16 +103,14 @@ class Exercicio(BaseModel):
     def get_total_duration(self):
         """
         Calculate total duration of the exercise.
-        Uses repetition to calculate across all cycles.
+        Calculates total pause time across all cycles.
         
         Returns:
-            int: Total time in seconds (cycles * pause_between_cycles)
+            int: Total time in seconds (pause between cycles, no pause after last cycle)
         """
-        total = 0
-        for i in range(self.ciclos):
-            if i < self.ciclos - 1:  # No pause after last cycle
-                total += self.pausa_entre_ciclos
-        return total
+        if self.ciclos > 0:
+            return (self.ciclos - 1) * self.pausa_entre_ciclos
+        return 0
     
     @classmethod
     def get_by_dieta(cls, dieta_id):

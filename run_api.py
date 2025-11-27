@@ -16,12 +16,14 @@ if __name__ == '__main__':
     port = int(os.environ.get('FLASK_PORT', 5000))
     debug = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
     
-    print(f"""
+    server_url = f"http://{host}:{port}"
+    
+    print("""
 ╔══════════════════════════════════════════════════════════╗
 ║      Sistema de Gerenciamento de Dietas - API REST       ║
-╠══════════════════════════════════════════════════════════╣
-║  Servidor iniciando em: http://{host}:{port}              ║
-║                                                          ║
+╠══════════════════════════════════════════════════════════╣""")
+    print(f"║  Servidor iniciando em: {server_url:<33}║")
+    print("""║                                                          ║
 ║  Endpoints disponíveis:                                  ║
 ║    • GET/POST    /api/dietas                             ║
 ║    • GET/PUT/DEL /api/dietas/<id>                        ║

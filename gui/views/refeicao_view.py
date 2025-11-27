@@ -34,6 +34,8 @@ class RefeicaoView(ttk.Frame):
         'pré-treino',
         'pós-treino'
     ]
+    # Pre-computed lowercase version for validation
+    TIPOS_REFEICAO_LOWER = [t.lower() for t in TIPOS_REFEICAO]
     
     def __init__(self, parent, api_client):
         """
@@ -253,7 +255,7 @@ class RefeicaoView(ttk.Frame):
             messagebox.showwarning("Validação", "O campo Tipo é obrigatório!")
             return
         
-        if tipo.lower() not in [t.lower() for t in self.TIPOS_REFEICAO]:
+        if tipo.lower() not in self.TIPOS_REFEICAO_LOWER:
             messagebox.showwarning("Validação", f"Tipo de refeição inválido!\nTipos válidos: {', '.join(self.TIPOS_REFEICAO)}")
             return
         

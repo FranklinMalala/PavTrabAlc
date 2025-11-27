@@ -189,7 +189,7 @@ class RefeicaoValidator(BaseValidator):
     Inherits from BaseValidator.
     """
     
-    # Valid meal types
+    # Valid meal types - pre-computed as class constant
     TIPOS_VALIDOS = [
         'café da manhã', 
         'almoço', 
@@ -199,6 +199,8 @@ class RefeicaoValidator(BaseValidator):
         'pré-treino', 
         'pós-treino'
     ]
+    # Pre-computed lowercase version for validation
+    TIPOS_VALIDOS_LOWER = [t.lower() for t in TIPOS_VALIDOS]
     
     def __init__(self):
         """Constructor for RefeicaoValidator."""
@@ -249,7 +251,7 @@ class RefeicaoValidator(BaseValidator):
         Raises:
             ValidationError: If meal type is invalid
         """
-        if tipo.lower() not in [t.lower() for t in self.TIPOS_VALIDOS]:
+        if tipo.lower() not in self.TIPOS_VALIDOS_LOWER:
             raise ValidationError(
                 f'Tipo de refeição inválido. Tipos válidos: {", ".join(self.TIPOS_VALIDOS)}',
                 'tipo_refeicao'
