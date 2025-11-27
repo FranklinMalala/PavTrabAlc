@@ -1,0 +1,174 @@
+"""
+Refeicao Controller Module
+Contains the controller for meal operations.
+"""
+
+from app import db
+from app.models.refeicao import Refeicao
+from app.validators.validators import RefeicaoValidator, ValidationError
+
+
+class RefeicaoController:
+    """
+    Controller for Refeicao (Meal) model.
+    Handles business logic and validation for meal operations.
+    
+    Demonstrates:
+        - Encapsulation of business logic
+        - Use of conditions and loops
+        - Error handling
+    """
+    
+    def __init__(self):
+        """Constructor for RefeicaoController."""
+        self._validator = RefeicaoValidator()
+    
+    def create(self, data):
+        """
+        Create a new meal.
+        
+        Args:
+            data: Dictionary with meal data
+            
+        Returns:
+            tuple: (Refeicao instance, error message or None)
+        """
+        try:
+            # Validate data
+            self._validator.validate(data)
+            
+            # Process alimentos list
+            alimentos = data.get('alimentos', [])
+            if isinstance(alimentos, str):
+                alimentos = [alimentos]
+            
+            # Create meal instance
+            refeicao = Refeicao(
+                tipo_refeicao=data.get('tipo_refeicao'),
+                quantidade=data.get('quantidade'),
+                alimentos=alimentos,
+                dieta_id=data.get('dieta_id')
+            )
+            
+            # Save to database
+            refeicao.save()
+            
+            return refeicao, None
+            
+        except ValidationError as e:
+            return None, e.message
+        except Exception as e:
+            db.session.rollback()
+            return None, str(e)
+    
+    def get_all(self):
+        """
+        Get all meals.
+        
+        Returns:
+            list: List of meal dictionaries
+        """
+        refeicoes = Refeicao.get_all()
+        return [r.to_dict() for r in refeicoes]
+    
+    def get_by_id(self, id):
+        """
+        Get a meal by ID.
+        
+        Args:
+            id: Meal ID
+            
+        Returns:
+            tuple: (Refeicao dictionary or None, error message or None)
+        """
+        refeicao = Refeicao.get_by_id(id)
+        if not refeicao:
+            return None, f'Refeição com ID {id} não encontrada'
+        return refeicao.to_dict(), None
+    
+    def get_by_dieta(self, dieta_id):
+        """
+        Get all meals for a specific diet.
+        
+        Args:
+            dieta_id: Diet ID
+            
+        Returns:
+            list: List of meal dictionaries
+        """
+        refeicoes = Refeicao.get_by_dieta(dieta_id)
+        return [r.to_dict() for r in refeicoes]
+    
+    def update(self, id, data):
+        """
+        Update a meal.
+        
+        Args:
+            id: Meal ID
+            data: Dictionary with updated data
+            
+        Returns:
+            tuple: (Refeicao dictionary or None, error message or None)
+        """
+        try:
+            # Get existing meal
+            refeicao = Refeicao.get_by_id(id)
+            if not refeicao:
+                return None, f'Refeição com ID {id} não encontrada'
+            
+            # Validate tipo_refeicao if present
+            if 'tipo_refeicao' in data:
+                self._validator.validate_not_empty(data['tipo_refeicao'], 'tipo_refeicao')
+                self._validator.validate_tipo_refeicao(data['tipo_refeicao'])
+            
+            # Validate quantidade if present
+            if 'quantidade' in data:
+                self._validator.validate_not_negative(data['quantidade'], 'quantidade')
+            
+            # Validate alimentos if present
+            if 'alimentos' in data:
+                self._validator.validate_list_not_empty(data['alimentos'], 'alimentos')
+            
+            # Validate dieta_id if present
+            if 'dieta_id' in data and data['dieta_id'] is not None:
+                self._validator.validate_dieta_exists(data['dieta_id'])
+            
+            # Update fields using loop
+            allowed_fields = ['tipo_refeicao', 'quantidade', 'alimentos', 'dieta_id']
+            update_data = {}
+            for field in allowed_fields:
+                if field in data:
+                    update_data[field] = data[field]
+            
+            # Apply updates
+            refeicao.update(**update_data)
+            
+            return refeicao.to_dict(), None
+            
+        except ValidationError as e:
+            return None, e.message
+        except Exception as e:
+            db.session.rollback()
+            return None, str(e)
+    
+    def delete(self, id):
+        """
+        Delete a meal.
+        
+        Args:
+            id: Meal ID
+            
+        Returns:
+            tuple: (success boolean, error message or None)
+        """
+        try:
+            refeicao = Refeicao.get_by_id(id)
+            if not refeicao:
+                return False, f'Refeição com ID {id} não encontrada'
+            
+            refeicao.delete()
+            return True, None
+            
+        except Exception as e:
+            db.session.rollback()
+            return False, str(e)
